@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diálogos éticos · Material didáctico interactivo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #fdfcf8;
+    --paper-2: #f3eee5;
+    --ink: #1a1410;
+    --muted: #6f6258;
+    --line: rgba(120, 99, 78, 0.22);
+    --amber: #8f3f18;
+    --amber-soft: #f3dfc6;
+    --stone-dark: #1c1917;
+    --green-deep: #0f4b3f;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background:
+      radial-gradient(circle at 7% 18%, rgba(155, 91, 42, 0.10), transparent 22rem),
+      radial-gradient(circle at 88% 12%, rgba(116, 96, 74, 0.10), transparent 28rem),
+      linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .serif { font-family: 'Fraunces', ui-serif, Georgia, serif; }
+  .app-shell { min-height: 100vh; }
+
+  /* ============ LOGO UACH ============ */
+  .logo-uach {
+    position: fixed;
+    top: 1.1rem;
+    left: 1.1rem;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  @media (min-width: 768px) {
+    .logo-uach { top: 1.55rem; left: 1.55rem; }
+  }
+  .logo-uach img {
+    object-fit: contain;
+    display: block;
+  }
+
+  /* ============ HERO IMAGE CAROUSEL ============ */
+  .hero-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/10;
+    max-height: 320px;
+    overflow: hidden;
+    border-radius: 14px;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(180,140,90,0.4) 0%, transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(120,80,50,0.3) 0%, transparent 50%),
+      linear-gradient(135deg, #c9b894 0%, #8a6f4d 50%, #5d4530 100%);
+    box-shadow: 0 30px 60px -20px rgba(60, 40, 20, 0.35),
+                0 10px 20px -8px rgba(60, 40, 20, 0.2);
+  }
+  .hero-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(45deg, transparent 0, transparent 20px, rgba(255,255,255,0.04) 20px, rgba(255,255,255,0.04) 21px);
+    z-index: 1;
+  }
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1);
+    transition: opacity 1.8s ease-in-out, transform 8s linear;
+    filter: sepia(0.18) saturate(0.92) brightness(0.97) contrast(1.04);
+    z-index: 2;
+  }
+  .hero-img.active {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  .hero-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(253,252,248,0) 0%, rgba(253,252,248,0) 55%, rgba(253,252,248,0.5) 100%);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .caption {
+    position: absolute;
+    bottom: 10px;
+    right: 14px;
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    transition: opacity 0.8s ease-in-out;
+    opacity: 1;
+    z-index: 4;
+    max-width: 70%;
+    text-align: right;
+  }
+  .caption.fading { opacity: 0; }
+  .caption.hidden-when-no-img { display: none; }
+
+  .hero-frame .fallback-mark {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    color: rgba(255, 248, 230, 0.18);
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-style: italic;
+    font-size: clamp(48px, 12vw, 96px);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    pointer-events: none;
+    transition: opacity 0.6s;
+  }
+  .hero-frame.has-image .fallback-mark { opacity: 0; }
+
+  /* ============ ANIMACIONES Y COMPONENTES ============ */
+  .fade-up { animation: fadeUp 0.9s ease-out; }
+  .fade-up-2 { animation: fadeUp 0.9s 0.15s ease-out backwards; }
+  .fade-up-3 { animation: fadeUp 0.9s 0.3s ease-out backwards; }
+  .fade-up-4 { animation: fadeUp 0.9s 0.45s ease-out backwards; }
+  .fade-up-5 { animation: fadeUp 0.9s 0.6s ease-out backwards; }
+  .view-fade { animation: viewFade 0.38s ease-out both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes viewFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .btn-press { transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease; }
+  .btn-press:hover { transform: translateY(-2px); }
+  .btn-press:active { transform: translateY(0); }
+
+  .paper-card {
+    background: rgba(255, 253, 247, 0.82);
+    border: 1px solid var(--line);
+    box-shadow: 0 28px 80px -42px rgba(58, 40, 24, 0.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .thin-line { border-color: var(--line); }
+  .dashboard-grid { display: grid; grid-template-columns: 245px minmax(0, 1fr); min-height: 100vh; }
+  @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+  .side-panel {
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,255,255,0.10), transparent 10rem),
+      linear-gradient(180deg, #211c19 0%, #2d2119 48%, #4d230f 100%);
+    color: #fffaf2;
+    border-right: 1px solid rgba(255,255,255,0.12);
+  }
+  .side-panel.teacher {
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,255,255,0.12), transparent 10rem),
+      linear-gradient(180deg, #133b34 0%, #174b3e 48%, #6a3519 100%);
+  }
+  @media (max-width: 900px) {
+    .side-panel { position: sticky; top: 0; z-index: 40; min-height: auto; }
+    .side-nav { display: none; }
+  }
+
+  .nav-chip {
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.08);
+  }
+  .nav-chip.active { background: rgba(255,255,255,0.18); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.38rem 0.72rem;
+    font-size: 0.72rem;
+    line-height: 1;
+    border: 1px solid rgba(143, 63, 24, 0.18);
+    background: rgba(143, 63, 24, 0.07);
+    color: #7a3517;
+    font-weight: 600;
+  }
+  .badge.green { border-color: rgba(15, 75, 63, 0.18); background: rgba(15, 75, 63, 0.08); color: #0f4b3f; }
+  .badge.gray { border-color: rgba(120, 113, 108, 0.18); background: rgba(120, 113, 108, 0.08); color: #57534e; }
+
+  .dilemma-ornament {
+    background:
+      linear-gradient(135deg, rgba(143,63,24,0.14), rgba(28,25,23,0.08)),
+      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.85), transparent 4rem);
+  }
+
+  .option-card {
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .option-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(143, 63, 24, 0.40);
+    box-shadow: 0 18px 50px -34px rgba(60, 40, 20, 0.70);
+  }
+  .option-card.explored {
+    background: rgba(15, 75, 63, 0.06);
+    border-color: rgba(15, 75, 63, 0.24);
+  }
+
+  .field-label { font-size: 0.75rem; font-weight: 700; color: #5c5048; letter-spacing: .08em; text-transform: uppercase; }
+  .field {
+    width: 100%;
+    border: 1px solid rgba(120, 99, 78, 0.26);
+    background: rgba(255,255,255,0.72);
+    border-radius: 1rem;
+    padding: 0.85rem 1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field:focus {
+    border-color: rgba(143, 63, 24, 0.55);
+    box-shadow: 0 0 0 4px rgba(143, 63, 24, 0.08);
+  }
+  textarea.field { min-height: 120px; resize: vertical; }
+
+  .toast {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 80;
+    max-width: min(92vw, 420px);
+    border-radius: 1rem;
+    background: rgba(28, 25, 23, 0.94);
+    color: white;
+    padding: 0.9rem 1rem;
+    box-shadow: 0 24px 70px -28px rgba(0,0,0,.6);
+    animation: toastIn 0.25s ease-out both;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+
+  .dilemma-cover {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(143,63,24,0.14), rgba(28,25,23,0.08)),
+      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.85), transparent 4rem);
+  }
+  .dilemma-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.16) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .dilemma-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: sepia(0.20) saturate(0.88) brightness(0.96) contrast(1.04);
+    transition: transform .7s ease, opacity .3s ease;
+    position: relative;
+    z-index: 1;
+  }
+  .group:hover .dilemma-cover img { transform: scale(1.045); }
+  .dilemma-cover-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-size: clamp(2rem, 6vw, 4.6rem);
+    font-style: italic;
+    color: rgba(143, 63, 24, 0.30);
+    z-index: 0;
+  }
+  .cover-caption {
+    position: absolute;
+    left: .85rem;
+    right: .85rem;
+    bottom: .75rem;
+    z-index: 3;
+    color: rgba(255,255,255,0.94);
+    text-shadow: 0 1px 5px rgba(0,0,0,.65);
+    font-size: .68rem;
+    line-height: 1.2;
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    .logo-uach { position: absolute; }
+    .hero-frame { max-height: 240px; }
+  }
+</style>
+</head>
+<body>
+  <!-- ============ LOGO UACH ============ -->
+  <div class="logo-uach" id="brand-logo">
+    <img id="uach-logo"
+         src="logo-uach.png"
+         alt="Escudo de la Universidad Autónoma de Chihuahua"
+         class="h-10 md:h-12 w-auto"
+         onerror="(function(img){
+           if (!img.dataset.tried) {
+             img.dataset.tried = 'wm';
+             img.src = 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_UACH.svg';
+           } else if (img.dataset.tried === 'wm') {
+             img.dataset.tried = 'wm2';
+             img.src = 'https://commons.wikimedia.org/wiki/Special:FilePath/Logo_UACH.png';
+           } else {
+             img.style.display = 'none';
+             document.getElementById('uach-svg-fallback').style.display = 'block';
+           }
+         })(this);">
+
+    <svg id="uach-svg-fallback" width="34" height="38" viewBox="0 0 34 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <path d="M17 2 L4 6 V20 C4 28 10 34 17 36 C24 34 30 28 30 20 V6 Z" stroke="#1a1410" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+      <path d="M17 5 L7 8 V20 C7 26 11 30 17 32 C23 30 27 26 27 20 V8 Z" stroke="#1a1410" stroke-width="0.6" fill="none" opacity="0.4" stroke-linejoin="round"/>
+      <text x="17" y="22" text-anchor="middle" font-family="Fraunces, serif" font-size="8.5" font-weight="700" fill="#1a1410" letter-spacing="0.5">UACH</text>
+    </svg>
+
+    <div class="hidden sm:block leading-tight">
+      <p class="serif text-[10px] font-semibold tracking-[0.15em] uppercase text-stone-800">Universidad Autónoma</p>
+      <p class="serif text-[10px] tracking-[0.15em] uppercase text-stone-600 mt-0.5">de Chihuahua</p>
+    </div>
+  </div>
+
+  <div id="storage-warning" class="hidden fixed left-1/2 top-4 z-[90] w-[92vw] max-w-2xl -translate-x-1/2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-xl">
+    Tu navegador está bloqueando <strong>localStorage</strong>. La app puede abrirse, pero los cambios podrían no guardarse al cerrar la pestaña.
+  </div>
+
+  <main id="app" class="app-shell"></main>
+  <div id="toast-root"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+<script>
+/*
+  Diálogos éticos · Material didáctico interactivo
+  Archivo único: HTML + CSS + JavaScript.
+  Versión semiprofesional con Firebase: GitHub Pages + Firestore + Auth.
+  El modo alumno lee dilemas públicos; el modo profesor requiere sesión para escribir.
+*/
+
+// ============ UTILIDADES GENERALES ============
+const STORAGE_KEY = 'dialogosEticos.estado.v2';
+const PROGRESS_KEY = 'dialogosEticos.progresoAlumno.v2';
+const app = document.getElementById('app');
+const brandLogo = document.getElementById('brand-logo');
+
+// ============ CONFIGURACIÓN FIREBASE ============
+// 1) Crea tu proyecto en Firebase.
+// 2) Agrega una app web.
+// 3) Copia aquí el objeto firebaseConfig que te entrega Firebase.
+// Mientras estos valores sigan como "PEGA_AQUI", la app usará localStorage como respaldo local.
+const firebaseConfig = {
+  apiKey: "AIzaSyBJHQEH6vUfeopd4T6SeefUYQZNbjgZsQ4",
+  authDomain: "dialogos-eticos.firebaseapp.com",
+  projectId: "dialogos-eticos",
+  storageBucket: "dialogos-eticos.firebasestorage.app",
+  messagingSenderId: "698854894977",
+  appId: "1:698854894977:web:62a3ed3aef4afa6ddf0c80",
+  measurementId: "G-S3DPGS6Q02"
+};
+
+let firebaseReady = false;
+let db = null;
+let auth = null;
+let currentUser = null;
+
+function escapeHTML(value = '') {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function splitParagraphs(text = '') {
+  return String(text).split(/\n+/).map(p => p.trim()).filter(Boolean);
+}
+
+function uid() {
+  return 'dilema-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+function showToast(message) {
+  const root = document.getElementById('toast-root');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  root.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    toast.style.transition = 'opacity .25s ease, transform .25s ease';
+    setTimeout(() => toast.remove(), 260);
+  }, 2600);
+}
+
+function supportsLocalStorage() {
+  try {
+    const testKey = '__dialogos_test__';
+    localStorage.setItem(testKey, 'ok');
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+const localStorageOK = supportsLocalStorage();
+if (!localStorageOK) document.getElementById('storage-warning').classList.remove('hidden');
+
+function levelLabel(level) {
+  const labels = { introductorio: 'Introductorio', intermedio: 'Intermedio', avanzado: 'Avanzado' };
+  return labels[level] || 'Introductorio';
+}
+
+function firstTag(dilema) {
+  return (dilema.etiquetas && dilema.etiquetas[0]) ? dilema.etiquetas[0] : 'Ética digital';
+}
+
+
+function coverHTML(dilema, index = 0, classes = 'h-full min-h-[150px]') {
+  const title = escapeHTML(dilema.imagenAlt || dilema.titulo || 'Imagen filosófica');
+  const src = dilema.imagenUrl ? escapeHTML(dilema.imagenUrl) : '';
+  const fallback = escapeHTML((dilema.titulo || 'φ').trim().charAt(0) || 'φ');
+  const caption = dilema.imagenAlt ? `<span class="cover-caption">${title}</span>` : '';
+  return `
+    <div class="dilemma-cover ${classes}">
+      <span class="dilemma-cover-fallback">${fallback}</span>
+      ${src ? `<img src="${src}" alt="${title}" loading="lazy" onerror="this.style.display='none';">` : ''}
+      <span class="absolute right-3 top-3 z-[3] rounded-full bg-white/82 px-3 py-1 serif text-sm text-amber-900 shadow-sm">${String(index + 1).padStart(2, '0')}</span>
+      ${caption}
+    </div>`;
+}
+
+function hasFirebaseConfig() {
+  return firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('PEGA_AQUI')
+    && firebaseConfig.projectId && !firebaseConfig.projectId.includes('PEGA_AQUI');
+}
+
+async function initFirebase() {
+  if (!hasFirebaseConfig()) {
+    console.warn('Firebase no está configurado. La app funcionará en modo local.');
+    return false;
+  }
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    auth = firebase.auth();
+    firebaseReady = true;
+
+    await new Promise(resolve => {
+      const unsubscribe = auth.onAuthStateChanged(user => {
+        currentUser = user;
+        unsubscribe();
+        resolve();
+      });
+    });
+
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+    });
+
+    return true;
+  } catch (error) {
+    console.error('No se pudo inicializar Firebase:', error);
+    firebaseReady = false;
+    return false;
+  }
+}
+
+function normalizeDilema(item = {}) {
+  return {
+    id: item.id || uid(),
+    titulo: item.titulo || '',
+    contexto: item.contexto || '',
+    preguntaCentral: item.preguntaCentral || '',
+    imagenUrl: item.imagenUrl || '',
+    imagenAlt: item.imagenAlt || '',
+    opciones: Array.isArray(item.opciones) ? item.opciones.map(op => ({
+      texto: op.texto || '',
+      retroalimentacion: {
+        postura: op.retroalimentacion?.postura || '',
+        fortalezas: op.retroalimentacion?.fortalezas || '',
+        objeciones: op.retroalimentacion?.objeciones || '',
+        autorReferencia: op.retroalimentacion?.autorReferencia || ''
+      }
+    })) : [],
+    cierre: item.cierre || '',
+    etiquetas: Array.isArray(item.etiquetas) ? item.etiquetas : [],
+    nivel: ['introductorio', 'intermedio', 'avanzado'].includes(item.nivel) ? item.nivel : 'introductorio'
+  };
+}
+
+async function loadDilemmasFromFirebase() {
+  if (!firebaseReady || !db) return null;
+  try {
+    const snapshot = await db.collection('dilemas').orderBy('orden', 'asc').get();
+    const dilemas = snapshot.docs.map(doc => normalizeDilema({ id: doc.id, ...doc.data() }));
+    return dilemas.length ? dilemas : structuredClone(seedDilemmas);
+  } catch (error) {
+    console.error('Error leyendo Firestore:', error);
+    showToast('No se pudo conectar con Firebase. Se usará el respaldo local.');
+    return null;
+  }
+}
+
+async function saveDilemaToFirebase(dilema, orden) {
+  if (!firebaseReady || !db) return false;
+  await db.collection('dilemas').doc(dilema.id).set({
+    ...dilema,
+    orden,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+  return true;
+}
+
+async function deleteDilemaFromFirebase(id) {
+  if (!firebaseReady || !db) return false;
+  await db.collection('dilemas').doc(id).delete();
+  return true;
+}
+
+async function replaceAllDilemmasInFirebase(dilemas) {
+  if (!firebaseReady || !db) return false;
+  const existing = await db.collection('dilemas').get();
+  const batch = db.batch();
+
+  existing.docs.forEach(doc => {
+    batch.delete(doc.ref);
+  });
+
+  dilemas.forEach((dilema, index) => {
+    const ref = db.collection('dilemas').doc(dilema.id);
+    batch.set(ref, {
+      ...dilema,
+      orden: index,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  });
+
+  await batch.commit();
+  return true;
+}
+
+// ============ DATOS INICIALES ============
+const seedDilemmas = [
+  {
+    "id": "ia-tesis",
+    "titulo": "¿Es éticamente válido usar IA para escribir tu tesis?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Kant%20gemaelde%203.jpg?width=900",
+    "imagenAlt": "Immanuel Kant — retrato clásico",
+    "contexto": "Una estudiante de último semestre está preparando su trabajo de titulación. Tiene buenas ideas, pero poco tiempo para ordenar sus argumentos. Decide usar una herramienta de inteligencia artificial para generar borradores, mejorar la redacción y sugerir posibles estructuras.\nEl problema aparece cuando se pregunta hasta dónde llega la ayuda legítima y dónde comienza una forma de sustitución intelectual: ¿sigue siendo su trabajo si la IA redacta partes importantes del texto?",
+    "preguntaCentral": "¿Puede considerarse honesto usar inteligencia artificial para escribir o mejorar un trabajo académico?",
+    "opciones": [
+      {
+        "texto": "Sí, siempre que la estudiante revise, comprenda y se responsabilice por el contenido final.",
+        "retroalimentacion": {
+          "postura": "Ética de la responsabilidad y enfoque pragmático.",
+          "fortalezas": "Reconoce que las herramientas no son moralmente negativas por sí mismas. La clave está en el uso responsable, la comprensión del contenido y la transparencia cuando la institución lo exige.",
+          "objeciones": "Puede volverse difícil distinguir entre apoyo técnico y sustitución del pensamiento propio. Además, si no se declara el uso de IA, podría existir una zona gris de deshonestidad académica.",
+          "autorReferencia": "John Dewey; Hans Jonas."
+        }
+      },
+      {
+        "texto": "No, porque la tesis debe mostrar el pensamiento propio y no el resultado producido por una máquina.",
+        "retroalimentacion": {
+          "postura": "Deontología y ética del deber.",
+          "fortalezas": "Defiende la honestidad académica como principio. Desde esta perspectiva, el valor del trabajo no está solo en el resultado, sino en el deber de producirlo mediante esfuerzo intelectual propio.",
+          "objeciones": "Puede ser una postura demasiado rígida si no distingue entre usar IA para corregir estilo, ordenar ideas o sustituir completamente el razonamiento.",
+          "autorReferencia": "Immanuel Kant."
+        }
+      },
+      {
+        "texto": "Depende del beneficio: si mejora el aprendizaje y no perjudica a otros, podría aceptarse.",
+        "retroalimentacion": {
+          "postura": "Utilitarismo.",
+          "fortalezas": "Evalúa las consecuencias. Si la IA permite aprender mejor, reducir barreras y producir un trabajo más claro, su uso puede justificarse por sus efectos positivos.",
+          "objeciones": "El criterio de utilidad puede justificar prácticas problemáticas si producen buenos resultados aparentes. También podría aumentar desigualdades entre quienes tienen acceso a mejores herramientas y quienes no.",
+          "autorReferencia": "John Stuart Mill; Jeremy Bentham."
+        }
+      }
+    ],
+    "cierre": "El dilema no se resuelve diciendo simplemente “sí” o “no”. La pregunta filosófica central es qué entendemos por autoría, aprendizaje y honestidad. Una postura equilibrada exigiría distinguir entre asistencia y sustitución: la IA puede apoyar el proceso, pero no debería reemplazar la comprensión, la deliberación ni la responsabilidad intelectual del estudiante.",
+    "etiquetas": [
+      "IA",
+      "Honestidad académica",
+      "Autoría"
+    ],
+    "nivel": "introductorio"
+  },
+  {
+    "id": "desconexion-redes",
+    "titulo": "¿Vale la pena desconectarse de las redes sociales?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Aristotle%20with%20a%20Bust%20of%20Homer.jpg?width=1024",
+    "imagenAlt": "Aristóteles contemplando el busto de Homero — Rembrandt",
+    "contexto": "Un grupo de estudiantes nota que pasa varias horas al día revisando redes sociales. Algunos dicen que las plataformas les ayudan a informarse, socializar y expresarse; otros sienten ansiedad, comparación constante y dificultad para concentrarse.\nUna profesora propone hacer una semana de desconexión digital. La propuesta genera debate: ¿sería una forma de recuperar libertad o una renuncia ingenua a espacios donde también ocurre la vida pública contemporánea?",
+    "preguntaCentral": "¿Desconectarse de las redes sociales aumenta nuestra libertad o nos aísla de la realidad actual?",
+    "opciones": [
+      {
+        "texto": "Desconectarse es una forma de recuperar autonomía frente a plataformas diseñadas para capturar atención.",
+        "retroalimentacion": {
+          "postura": "Ética de la virtud y crítica de la técnica.",
+          "fortalezas": "Subraya la importancia del autocontrol, la atención y la vida interior. La libertad no consiste solo en elegir, sino en no ser gobernado por hábitos impuestos desde fuera.",
+          "objeciones": "Puede ignorar que las redes también permiten organización social, acceso a información y vínculos significativos para muchas personas.",
+          "autorReferencia": "Aristóteles; Byung-Chul Han."
+        }
+      },
+      {
+        "texto": "No conviene desconectarse: lo importante es aprender a usar las redes con criterio crítico.",
+        "retroalimentacion": {
+          "postura": "Pragmatismo educativo y ciudadanía digital.",
+          "fortalezas": "Propone formar hábitos de uso crítico en lugar de abandonar el espacio digital. Reconoce que las redes son parte del mundo social y político contemporáneo.",
+          "objeciones": "Puede subestimar el poder persuasivo del diseño algorítmico. No siempre basta con “usar bien” una herramienta diseñada para maximizar permanencia y reacción emocional.",
+          "autorReferencia": "John Dewey; Luciano Floridi."
+        }
+      },
+      {
+        "texto": "Depende de cada persona: si las redes causan daño, desconectarse puede ser moralmente necesario.",
+        "retroalimentacion": {
+          "postura": "Ética del cuidado.",
+          "fortalezas": "Atiende la vulnerabilidad concreta de cada sujeto. No universaliza una respuesta: considera bienestar emocional, relaciones y condiciones personales.",
+          "objeciones": "Puede quedarse en una solución individual y dejar intacto el problema estructural del diseño de plataformas que explotan la atención.",
+          "autorReferencia": "Carol Gilligan; Nel Noddings."
+        }
+      }
+    ],
+    "cierre": "La desconexión puede ser una práctica filosófica si permite examinar nuestros hábitos, pero no debería convertirse en una huida simplista. El problema central no es solo estar o no estar en redes, sino preguntarnos qué tipo de sujetos nos volvemos al usarlas: más atentos, más libres, más capaces de dialogar; o más reactivos, dependientes y fragmentados.",
+    "etiquetas": [
+      "Redes sociales",
+      "Libertad",
+      "Atención"
+    ],
+    "nivel": "introductorio"
+  },
+  {
+    "id": "privacidad-smartphone",
+    "titulo": "¿Aceptarías vigilancia digital a cambio de seguridad?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Socrates%20Louvre.jpg?width=900",
+    "imagenAlt": "Sócrates — busto romano conservado en el Louvre",
+    "contexto": "Una ciudad propone instalar una aplicación obligatoria en los teléfonos de los estudiantes para mejorar la seguridad escolar. La app permite alertas de emergencia y ubicación en tiempo real, pero también recopila datos de movimiento, horarios y contactos frecuentes.\nLas autoridades afirman que el sistema puede prevenir riesgos. Algunas familias lo apoyan; otras temen que la vigilancia se normalice y que los datos sean usados para fines distintos a la protección.",
+    "preguntaCentral": "¿Es justificable sacrificar privacidad personal para obtener mayor seguridad colectiva?",
+    "opciones": [
+      {
+        "texto": "Sí, si la medida reduce riesgos graves y beneficia a la mayoría.",
+        "retroalimentacion": {
+          "postura": "Utilitarismo aplicado a políticas públicas.",
+          "fortalezas": "Considera el bienestar colectivo y la prevención de daños. Si el beneficio social es alto, la medida puede parecer razonable.",
+          "objeciones": "Puede justificar abusos si la utilidad colectiva se impone siempre sobre derechos individuales. La privacidad no es un lujo, sino una condición de libertad.",
+          "autorReferencia": "John Stuart Mill."
+        }
+      },
+      {
+        "texto": "No, porque la privacidad es un derecho que no debe violarse aunque exista una buena intención.",
+        "retroalimentacion": {
+          "postura": "Deontología y derechos fundamentales.",
+          "fortalezas": "Protege la dignidad de la persona frente a usos instrumentales. Recuerda que no todo lo técnicamente posible es moralmente aceptable.",
+          "objeciones": "Puede parecer insuficiente ante situaciones de riesgo real donde la inacción también produce daños.",
+          "autorReferencia": "Immanuel Kant; tradiciones de derechos humanos."
+        }
+      },
+      {
+        "texto": "Solo sería aceptable con límites claros, consentimiento, transparencia y control ciudadano.",
+        "retroalimentacion": {
+          "postura": "Ética de la información y gobernanza responsable.",
+          "fortalezas": "No rechaza la tecnología, pero exige condiciones institucionales: finalidad limitada, protección de datos, auditoría y posibilidad de retiro.",
+          "objeciones": "En la práctica, los controles pueden fallar o volverse meramente formales. Además, el consentimiento puede no ser libre si la app es obligatoria.",
+          "autorReferencia": "Luciano Floridi."
+        }
+      }
+    ],
+    "cierre": "Este dilema muestra que seguridad y privacidad no son valores aislados. Una solución filosóficamente responsable exige preguntar quién vigila, con qué límites, durante cuánto tiempo y con qué mecanismos de rendición de cuentas. La tecnología puede proteger, pero también puede acostumbrarnos a renunciar a libertades sin examinarlo.",
+    "etiquetas": [
+      "Privacidad",
+      "Smartphones",
+      "Seguridad"
+    ],
+    "nivel": "intermedio"
+  },
+  {
+    "id": "algoritmo-contratacion",
+    "titulo": "¿Debe un algoritmo decidir quién obtiene un empleo?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Sanzio_01.jpg?width=1200",
+    "imagenAlt": "La Escuela de Atenas — Rafael",
+    "contexto": "Una empresa recibe miles de solicitudes de trabajo y decide usar un sistema de inteligencia artificial para filtrar candidatos. El sistema promete rapidez y eficiencia, pero algunos aspirantes sospechan que reproduce sesgos contra ciertas universidades, edades o formas de redactar el currículum.\nEl departamento de recursos humanos afirma que el algoritmo solo ayuda a ordenar información. Sin embargo, para muchas personas la primera decisión —quién pasa y quién queda fuera— ya determina su posibilidad real de ser escuchadas.",
+    "preguntaCentral": "¿Es justo delegar decisiones laborales importantes a sistemas algorítmicos?",
+    "opciones": [
+      {
+        "texto": "Sí, si el algoritmo mejora la eficiencia y permite revisar más candidaturas.",
+        "retroalimentacion": {
+          "postura": "Consecuencialismo organizacional.",
+          "fortalezas": "Valora resultados prácticos: rapidez, reducción de carga administrativa y posibilidad de procesar grandes volúmenes de información.",
+          "objeciones": "La eficiencia no basta para justificar una decisión si el sistema oculta sesgos o impide que las personas comprendan por qué fueron rechazadas.",
+          "autorReferencia": "Jeremy Bentham; ética aplicada a organizaciones."
+        }
+      },
+      {
+        "texto": "No, porque una persona no debe ser reducida a datos procesados automáticamente.",
+        "retroalimentacion": {
+          "postura": "Deontología y dignidad humana.",
+          "fortalezas": "Subraya que el candidato debe ser tratado como fin en sí mismo, no como expediente estadístico. Exige respeto, explicación y trato individualizado.",
+          "objeciones": "Puede ignorar que los humanos también tienen sesgos y que un sistema bien auditado podría corregir algunos de ellos.",
+          "autorReferencia": "Immanuel Kant."
+        }
+      },
+      {
+        "texto": "Puede usarse como apoyo, pero la decisión final debe ser humana y auditable.",
+        "retroalimentacion": {
+          "postura": "Ética de la responsabilidad tecnológica.",
+          "fortalezas": "Busca un equilibrio: reconoce el valor técnico del sistema, pero exige supervisión humana, transparencia y mecanismos de apelación.",
+          "objeciones": "La supervisión humana puede volverse simbólica si quienes deciden confían ciegamente en la recomendación automática.",
+          "autorReferencia": "Hans Jonas; Luciano Floridi."
+        }
+      }
+    ],
+    "cierre": "La pregunta central no es si la tecnología puede ayudar, sino bajo qué condiciones puede intervenir en decisiones que afectan la vida de las personas. Una decisión laboral justa requiere eficiencia, pero también explicación, revisión, responsabilidad y reconocimiento de la dignidad del candidato.",
+    "etiquetas": [
+      "IA",
+      "Trabajo",
+      "Justicia"
+    ],
+    "nivel": "intermedio"
+  },
+  {
+    "id": "deepfake-verdad",
+    "titulo": "¿Compartirías un video viral aunque no sepas si es verdadero?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/David%20-%20The%20Death%20of%20Socrates.jpg?width=1200",
+    "imagenAlt": "La muerte de Sócrates — Jacques-Louis David",
+    "contexto": "Durante una campaña estudiantil circula un video donde una candidata parece insultar a sus compañeros. El video se vuelve viral en minutos. Algunos estudiantes quieren compartirlo porque, si es verdadero, revela algo importante; otros advierten que podría tratarse de un montaje o de un deepfake.\nLa presión social es inmediata: quien no comparte parece indiferente, pero quien comparte sin verificar puede contribuir a destruir injustamente la reputación de una persona.",
+    "preguntaCentral": "¿Tenemos responsabilidad moral por la información que compartimos en redes?",
+    "opciones": [
+      {
+        "texto": "Sí, compartir sin verificar puede causar daño y nos hace parcialmente responsables.",
+        "retroalimentacion": {
+          "postura": "Ética de la responsabilidad y virtud epistémica.",
+          "fortalezas": "Defiende la prudencia, la honestidad intelectual y el cuidado de las consecuencias antes de amplificar información dudosa.",
+          "objeciones": "Puede ser difícil verificar todo en contextos de urgencia, especialmente cuando la información parece de interés público.",
+          "autorReferencia": "Hans Jonas; Aristóteles."
+        }
+      },
+      {
+        "texto": "No necesariamente: la responsabilidad principal es de quien creó el contenido falso.",
+        "retroalimentacion": {
+          "postura": "Responsabilidad individual restringida.",
+          "fortalezas": "Distingue entre producir engaño y circular algo sin conocer su falsedad. Evita cargar toda la culpa sobre usuarios comunes.",
+          "objeciones": "Ignora que la viralidad depende precisamente de miles de pequeñas decisiones de compartir. La ignorancia no siempre elimina la responsabilidad.",
+          "autorReferencia": "Hannah Arendt; ética de la acción."
+        }
+      },
+      {
+        "texto": "Depende del daño probable: si puede afectar gravemente a alguien, hay que detenerse antes de compartir.",
+        "retroalimentacion": {
+          "postura": "Utilitarismo prudencial.",
+          "fortalezas": "Evalúa consecuencias concretas: reputación, confianza pública, polarización y daño emocional. Propone detenerse cuando el riesgo es alto.",
+          "objeciones": "El cálculo de consecuencias puede ser incierto y llegar tarde cuando el contenido ya circula masivamente.",
+          "autorReferencia": "John Stuart Mill."
+        }
+      }
+    ],
+    "cierre": "La vida digital exige una ética de la atención. Compartir no es un gesto neutro: puede informar, pero también dañar. El pensamiento crítico aparece cuando interrumpimos la reacción inmediata y preguntamos por la fuente, el contexto, la evidencia y las personas afectadas.",
+    "etiquetas": [
+      "Deepfakes",
+      "Verdad",
+      "Redes sociales"
+    ],
+    "nivel": "introductorio"
+  },
+  {
+    "id": "celulares-aula",
+    "titulo": "¿Deberían prohibirse los celulares en clase?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt%20-%20The%20Philosopher%20in%20Meditation.jpg?width=1024",
+    "imagenAlt": "Filósofo en meditación — Rembrandt",
+    "contexto": "Una preparatoria debate si debe prohibir el uso de celulares durante las clases. Algunos docentes dicen que los teléfonos fragmentan la atención y dificultan la lectura profunda. Varios estudiantes responden que el celular también sirve para investigar, organizar tareas y comunicarse en emergencias.\nLa discusión no trata solo de disciplina escolar, sino de una pregunta más amplia: ¿cómo formar atención y autonomía en un entorno diseñado para interrumpirnos constantemente?",
+    "preguntaCentral": "¿Una prohibición del celular ayuda a pensar mejor o limita injustamente la autonomía del estudiante?",
+    "opciones": [
+      {
+        "texto": "Sí deberían prohibirse durante ciertos momentos para proteger la concentración.",
+        "retroalimentacion": {
+          "postura": "Ética de la virtud y formación del carácter.",
+          "fortalezas": "Entiende la atención como hábito que se cultiva. No toda restricción es opresión: algunas reglas ayudan a formar capacidades.",
+          "objeciones": "Una prohibición absoluta puede infantilizar al estudiante y evitar que aprenda a autorregularse en contextos reales.",
+          "autorReferencia": "Aristóteles."
+        }
+      },
+      {
+        "texto": "No deberían prohibirse; habría que enseñar a usarlos críticamente.",
+        "retroalimentacion": {
+          "postura": "Pragmatismo educativo.",
+          "fortalezas": "Busca educar para el mundo real, no crear una burbuja sin tecnología. Promueve responsabilidad y uso intencional.",
+          "objeciones": "Puede subestimar la fuerza del diseño persuasivo de las aplicaciones, especialmente en adolescentes.",
+          "autorReferencia": "John Dewey."
+        }
+      },
+      {
+        "texto": "Debe haber acuerdos flexibles: momentos sin celular y momentos de uso pedagógico.",
+        "retroalimentacion": {
+          "postura": "Ética del cuidado y deliberación comunitaria.",
+          "fortalezas": "Atiende tanto la necesidad de concentración como la utilidad educativa del dispositivo. Permite construir normas con participación de estudiantes y docentes.",
+          "objeciones": "La flexibilidad puede volverse ambigua si no hay criterios claros, consistencia y seguimiento.",
+          "autorReferencia": "Nel Noddings; comunidad de indagación."
+        }
+      }
+    ],
+    "cierre": "El problema no es solo el objeto llamado celular, sino la relación que construimos con él. Una respuesta formativa no tendría que elegir entre prohibición total y libertad sin criterios; puede diseñar espacios donde la tecnología tenga propósito, límites y sentido pedagógico.",
+    "etiquetas": [
+      "Atención",
+      "Escuela",
+      "Smartphones"
+    ],
+    "nivel": "introductorio"
+  },
+  {
+    "id": "cancelacion-digital",
+    "titulo": "¿Es justa la cancelación digital?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Socrates%20Louvre.jpg?width=900",
+    "imagenAlt": "Sócrates — busto romano conservado en el Louvre",
+    "contexto": "Un profesor publica hace años un comentario ofensivo en redes sociales. Tiempo después, el comentario resurge y un grupo de estudiantes exige que sea expulsado de una conferencia. Otros argumentan que se disculpó, cambió su postura y debería permitirse el diálogo.\nLa comunidad se divide entre quienes ven la cancelación como exigencia de justicia y quienes la consideran una forma de castigo público sin espacio para la transformación moral.",
+    "preguntaCentral": "¿La cancelación digital es una forma legítima de responsabilidad pública o una práctica injusta de castigo social?",
+    "opciones": [
+      {
+        "texto": "Es legítima cuando visibiliza daños que antes eran ignorados.",
+        "retroalimentacion": {
+          "postura": "Justicia social y ética del reconocimiento.",
+          "fortalezas": "Permite que grupos afectados nombren daños, exijan responsabilidad y cuestionen privilegios que antes quedaban impunes.",
+          "objeciones": "Puede volverse punitiva, rápida y desproporcionada, sin distinguir entre error, patrón de daño y posibilidad de reparación.",
+          "autorReferencia": "Axel Honneth; teorías del reconocimiento."
+        }
+      },
+      {
+        "texto": "No es justa si impide el arrepentimiento y reduce a la persona a su peor acción.",
+        "retroalimentacion": {
+          "postura": "Ética de la virtud y responsabilidad moral compleja.",
+          "fortalezas": "Reconoce que las personas pueden cambiar. Subraya la importancia de proporcionalidad, contexto y aprendizaje moral.",
+          "objeciones": "Puede usarse para minimizar daños reales o pedir “diálogo” sin asumir reparación concreta.",
+          "autorReferencia": "Aristóteles; Hannah Arendt."
+        }
+      },
+      {
+        "texto": "Depende del procedimiento: debe haber escucha, contexto, reparación y límites al daño.",
+        "retroalimentacion": {
+          "postura": "Ética deliberativa.",
+          "fortalezas": "Evita tanto la impunidad como el linchamiento. Propone evaluar caso por caso con criterios de proporcionalidad y reparación.",
+          "objeciones": "En redes sociales es difícil sostener procedimientos deliberativos: la velocidad favorece reacción y polarización.",
+          "autorReferencia": "Jürgen Habermas."
+        }
+      }
+    ],
+    "cierre": "La cancelación digital revela una tensión entre justicia y castigo. Pensar filosóficamente el problema implica preguntar qué daño ocurrió, quién debe responder, qué reparación es posible y cómo evitar que la búsqueda de justicia se convierta en destrucción simbólica sin aprendizaje colectivo.",
+    "etiquetas": [
+      "Redes sociales",
+      "Justicia",
+      "Responsabilidad"
+    ],
+    "nivel": "avanzado"
+  },
+  {
+    "id": "datos-salud-publica",
+    "titulo": "¿Donarías tus datos para mejorar la salud pública?",
+    "imagenUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Plato%20Silanion%20Musei%20Capitolini%20MC1377.jpg?width=900",
+    "imagenAlt": "Platón — copia romana atribuida a Silanión",
+    "contexto": "Un hospital universitario pide a estudiantes compartir datos anónimos de actividad física, sueño y alimentación para entrenar un sistema que detecte riesgos de salud pública. El proyecto promete mejores diagnósticos y prevención, pero nadie puede garantizar que los datos no sean reidentificados o usados después por aseguradoras, empresas o gobiernos.\nParticipar podría ayudar a muchas personas; negarse protege la privacidad individual. La decisión parece sencilla hasta que se advierte que los beneficios y los riesgos no se reparten siempre de forma justa.",
+    "preguntaCentral": "¿Es moralmente correcto compartir datos personales si pueden beneficiar a la sociedad?",
+    "opciones": [
+      {
+        "texto": "Sí, compartir datos puede ser un acto solidario si produce beneficios de salud colectiva.",
+        "retroalimentacion": {
+          "postura": "Utilitarismo y bien común.",
+          "fortalezas": "Valora la posibilidad de prevenir enfermedades y mejorar políticas públicas. Considera que ciertos sacrificios individuales pueden justificarse por beneficios amplios.",
+          "objeciones": "Puede invisibilizar riesgos para minorías o personas vulnerables. Además, el bien común no debe convertirse en excusa para extraer datos sin garantías.",
+          "autorReferencia": "John Stuart Mill; bioética de salud pública."
+        }
+      },
+      {
+        "texto": "No, porque los datos personales forman parte de la autonomía y no deben entregarse bajo presión.",
+        "retroalimentacion": {
+          "postura": "Deontología y autonomía personal.",
+          "fortalezas": "Defiende consentimiento libre, información clara y límites al uso de la persona como medio para fines colectivos.",
+          "objeciones": "Puede resultar demasiado individualista ante problemas sanitarios que requieren cooperación social.",
+          "autorReferencia": "Immanuel Kant; principialismo bioético."
+        }
+      },
+      {
+        "texto": "Solo si hay anonimización fuerte, finalidad limitada, auditoría y posibilidad de retirar el consentimiento.",
+        "retroalimentacion": {
+          "postura": "Ética de la información y gobernanza de datos.",
+          "fortalezas": "Busca condiciones técnicas e institucionales para que la cooperación no implique vulnerabilidad excesiva.",
+          "objeciones": "La anonimización nunca es perfecta y la gobernanza puede fallar si no hay vigilancia independiente.",
+          "autorReferencia": "Luciano Floridi."
+        }
+      }
+    ],
+    "cierre": "Compartir datos puede ser una forma de solidaridad, pero solo si se respeta la autonomía y se distribuyen justamente riesgos y beneficios. La pregunta filosófica no es únicamente qué puede hacer la tecnología con nuestros datos, sino qué condiciones hacen legítimo ese uso.",
+    "etiquetas": [
+      "Datos",
+      "Salud pública",
+      "Privacidad"
+    ],
+    "nivel": "intermedio"
+  }
+];
+
+
+let state = { version: '1.0', dilemas: [] };
+let progress = { completados: [] };
+let student = { dilemaId: null, paso: 'galeria', exploradas: [], seleccion: null };
+let teacherEditingId = null;
+
+// ============ PERSISTENCIA LOCAL ============
+async function loadState() {
+  // El progreso del alumno siempre se mantiene local para no almacenar datos personales.
+  try {
+    const rawProgress = localStorageOK ? localStorage.getItem(PROGRESS_KEY) : null;
+    progress = rawProgress ? JSON.parse(rawProgress) : { completados: [] };
+    if (!Array.isArray(progress.completados)) progress.completados = [];
+  } catch (error) {
+    progress = { completados: [] };
+  }
+
+  if (firebaseReady) {
+    const firebaseDilemmas = await loadDilemmasFromFirebase();
+    if (firebaseDilemmas) {
+      state = { version: '1.0-firebase', dilemas: firebaseDilemmas };
+      return;
+    }
+  }
+
+  if (!localStorageOK) {
+    state = { version: '1.0', dilemas: structuredClone(seedDilemmas) };
+    return;
+  }
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      state = { version: '1.0', dilemas: structuredClone(seedDilemmas) };
+      saveState();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    state = {
+      version: parsed.version || '1.0',
+      dilemas: Array.isArray(parsed.dilemas) && parsed.dilemas.length ? parsed.dilemas : structuredClone(seedDilemmas)
+    };
+  } catch (error) {
+    state = { version: '1.0', dilemas: structuredClone(seedDilemmas) };
+    showToast('No se pudo leer el respaldo local. Se cargaron dilemas de muestra.');
+  }
+}
+
+async function saveState() {
+  if (firebaseReady) {
+    for (let index = 0; index < state.dilemas.length; index++) {
+      await saveDilemaToFirebase(state.dilemas[index], index);
+    }
+    return;
+  }
+  if (!localStorageOK) return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state, null, 2));
+}
+
+function saveProgress() {
+  if (!localStorageOK) return;
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress, null, 2));
+}
+
+function getDilema(id) {
+  return state.dilemas.find(d => d.id === id);
+}
+
+function isCompleted(id) {
+  return progress.completados.includes(id);
+}
+
+function markCompleted(id) {
+  if (!progress.completados.includes(id)) {
+    progress.completados.push(id);
+    saveProgress();
+  }
+}
+
+// ============ PLANTILLAS COMPARTIDAS ============
+function renderShell(mode, contentHTML, active = 'dilemas') {
+  const isTeacher = mode === 'profesor';
+  brandLogo.style.opacity = '0';
+  brandLogo.style.pointerEvents = 'none';
+  app.className = 'app-shell view-fade';
+  app.innerHTML = `
+    <section class="dashboard-grid">
+      <aside class="side-panel ${isTeacher ? 'teacher' : ''} p-5 md:p-6 flex flex-col justify-between gap-6">
+        <div>
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="serif text-lg italic opacity-90">Diálogos éticos</p>
+              <p class="mt-1 text-xs uppercase tracking-[0.22em] opacity-70">Modo ${isTeacher ? 'profesor' : 'alumno'}</p>
+            </div>
+            <button onclick="renderHome()" class="md:hidden rounded-full border border-white/25 px-3 py-2 text-sm">Salir</button>
+          </div>
+          <nav class="side-nav mt-10 space-y-3">
+            <button onclick="${isTeacher ? 'renderTeacherDashboard()' : 'renderStudentGallery()'}" class="nav-chip ${active === 'dilemas' ? 'active' : ''} w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold">✦ Dilemas</button>
+            ${isTeacher ? `
+              <button onclick="renderTeacherForm()" class="nav-chip ${active === 'crear' ? 'active' : ''} w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold">＋ Crear nuevo</button>
+              <button onclick="document.getElementById('import-json').click()" class="nav-chip w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold">⇧ Importar JSON</button>
+            ` : `
+              <button onclick="renderStudentProgress()" class="nav-chip ${active === 'progreso' ? 'active' : ''} w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold">✓ Progreso</button>
+              <button onclick="renderStudentAbout()" class="nav-chip ${active === 'acerca' ? 'active' : ''} w-full rounded-2xl px-4 py-3 text-left text-sm font-semibold">ⓘ Acerca de</button>
+            `}
+          </nav>
+        </div>
+        <div class="hidden md:block">
+          <button onclick="renderHome()" class="btn-press w-full rounded-full border border-white/35 px-5 py-3 text-sm font-semibold hover:bg-white/10">← Volver al inicio</button>
+        </div>
+      </aside>
+      <section class="min-w-0 px-5 py-7 md:px-8 lg:px-12 lg:py-10">
+        ${contentHTML}
+      </section>
+    </section>
+    <input id="import-json" type="file" accept="application/json,.json" class="hidden" onchange="handleImportJSON(event)">
+  `;
+}
+
+function buttonPrimary(label, onclick, extraClass = "", attrs = "") {
+  return `<button onclick="${onclick}" ${attrs} class="btn-press rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-stone-900/15 hover:bg-stone-800 ${extraClass}">${label}</button>`;
+}
+
+function buttonSecondary(label, onclick, extraClass = "", attrs = "") {
+  return `<button onclick="${onclick}" ${attrs} class="btn-press rounded-full border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-800 hover:border-stone-600 hover:bg-stone-100 ${extraClass}">${label}</button>`;
+}
+
+function levelBadge(level) {
+  const cls = level === 'avanzado' ? 'badge' : level === 'intermedio' ? 'badge green' : 'badge gray';
+  return `<span class="${cls}">${escapeHTML(levelLabel(level))}</span>`;
+}
+
+// ============ PANTALLA DE BIENVENIDA ============
+function renderHome() {
+  brandLogo.style.opacity = '1';
+  brandLogo.style.pointerEvents = 'auto';
+  app.className = 'app-shell flex items-center justify-center px-5 py-10 md:py-12 view-fade';
+  app.innerHTML = `
+    <main class="max-w-xl w-full pt-14 sm:pt-10">
+      <div class="fade-up hero-frame mb-8 md:mb-10" id="hero">
+        <span class="fallback-mark">φ</span>
+        <img class="hero-img" data-caption="«La Escuela de Atenas» — Rafael, 1511" src="https://commons.wikimedia.org/wiki/Special:FilePath/Sanzio_01.jpg?width=1200" alt="La Escuela de Atenas">
+        <img class="hero-img" data-caption="«La muerte de Sócrates» — Jacques-Louis David, 1787" src="https://commons.wikimedia.org/wiki/Special:FilePath/David%20-%20The%20Death%20of%20Socrates.jpg?width=1200" alt="La muerte de Sócrates">
+        <img class="hero-img" data-caption="«Aristóteles contemplando el busto de Homero» — Rembrandt, 1653" src="https://commons.wikimedia.org/wiki/Special:FilePath/Aristotle%20with%20a%20Bust%20of%20Homer.jpg?width=1024" alt="Aristóteles con el busto de Homero">
+        <img class="hero-img" data-caption="«Filósofo en meditación» — Rembrandt, 1632" src="https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt%20-%20The%20Philosopher%20in%20Meditation.jpg?width=1024" alt="Filósofo en meditación">
+        <img class="hero-img" data-caption="«Sócrates» — busto romano (copia de original griego)" src="https://commons.wikimedia.org/wiki/Special:FilePath/Socrates%20Louvre.jpg?width=900" alt="Busto de Sócrates">
+        <span class="caption" id="caption">«La Escuela de Atenas» — Rafael, 1511</span>
+      </div>
+
+      <p class="fade-up-2 text-center text-xs tracking-[0.3em] uppercase text-amber-800 mb-4">Material didáctico · Filosofía</p>
+      <h1 class="fade-up-2 serif text-4xl md:text-6xl font-light text-center leading-[1.05] mb-5 tracking-tight">Diálogos<br><em class="font-normal italic text-amber-900">éticos</em></h1>
+      <p class="fade-up-3 serif text-center text-base md:text-lg text-stone-600 italic mb-8 leading-relaxed max-w-md mx-auto">Una invitación a pensar los dilemas de nuestro tiempo desde múltiples perspectivas filosóficas.</p>
+      <div class="fade-up-3 flex justify-center mb-8"><div class="w-12 h-px bg-stone-400"></div></div>
+      <div class="fade-up-4 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+        <button onclick="enter('alumno')" class="btn-press flex-1 px-6 py-4 bg-stone-900 text-white rounded-full font-medium hover:bg-stone-800 shadow-lg shadow-stone-900/20">Soy alumno →</button>
+        <button onclick="enter('profesor')" class="btn-press flex-1 px-6 py-4 bg-transparent border border-stone-400 text-stone-800 rounded-full font-medium hover:border-stone-700 hover:bg-stone-100">Soy profesor →</button>
+      </div>
+      <p class="fade-up-5 text-center text-xs text-stone-500 mt-12 serif italic">Facultad de Filosofía y Letras</p>
+    </main>
+  `;
+  initHeroCarousel();
+}
+
+function enter(mode) {
+  if (mode === 'alumno') renderStudentGallery();
+  if (mode === 'profesor') {
+    if (firebaseReady && !currentUser) renderTeacherLogin();
+    else renderTeacherDashboard();
+  }
+}
+
+// ============ CARRUSEL DE IMÁGENES ==========
+let heroInterval = null;
+function initHeroCarousel() {
+  if (heroInterval) clearInterval(heroInterval);
+  const heroFrame = document.getElementById('hero');
+  const allImages = Array.from(document.querySelectorAll('.hero-img'));
+  const captionEl = document.getElementById('caption');
+  if (!heroFrame || !captionEl) return;
+
+  let images = [];
+  let currentImg = 0;
+  let rotationStarted = false;
+
+  function startRotationIfReady() {
+    if (rotationStarted || images.length === 0) return;
+    rotationStarted = true;
+    images[0].classList.add('active');
+    captionEl.textContent = images[0].dataset.caption;
+    heroFrame.classList.add('has-image');
+    if (images.length > 1) heroInterval = setInterval(rotateImage, 6000);
+  }
+
+  allImages.forEach(img => {
+    const onLoad = () => {
+      if (!images.includes(img)) {
+        images.push(img);
+        startRotationIfReady();
+      }
+    };
+    const onError = () => { img.style.display = 'none'; };
+    if (img.complete && img.naturalWidth > 0) onLoad();
+    else {
+      img.addEventListener('load', onLoad);
+      img.addEventListener('error', onError);
+    }
+  });
+
+  setTimeout(() => { if (images.length === 0) captionEl.classList.add('hidden-when-no-img'); }, 8000);
+
+  function rotateImage() {
+    if (images.length < 2) return;
+    const previousImg = images[currentImg];
+    currentImg = (currentImg + 1) % images.length;
+    const nextImg = images[currentImg];
+    captionEl.classList.add('fading');
+    setTimeout(() => {
+      previousImg.classList.remove('active');
+      nextImg.classList.add('active');
+      captionEl.textContent = nextImg.dataset.caption;
+      captionEl.classList.remove('fading');
+    }, 800);
+  }
+}
+
+// ============ MODO ALUMNO · GALERÍA ============
+function renderStudentGallery() {
+  student = { dilemaId: null, paso: 'galeria', exploradas: [], seleccion: null };
+  const completed = progress.completados.length;
+  const total = state.dilemas.length;
+  const cards = state.dilemas.map((d, index) => `
+    <article class="paper-card rounded-[1.6rem] overflow-hidden group">
+      <div class="grid gap-0 md:grid-cols-[180px_1fr]">
+        ${coverHTML(d, index, 'min-h-[190px] md:min-h-full') }
+        <div class="p-6 md:p-7">
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            ${levelBadge(d.nivel)}
+            ${isCompleted(d.id) ? '<span class="badge green">Completado</span>' : '<span class="badge gray">Disponible</span>'}
+          </div>
+          <h3 class="serif text-2xl font-normal tracking-tight text-stone-950">${escapeHTML(d.titulo)}</h3>
+          <p class="mt-3 line-clamp-3 text-sm leading-6 text-stone-600">${escapeHTML(d.preguntaCentral)}</p>
+          <div class="mt-5 flex flex-wrap gap-2">
+            ${(d.etiquetas || []).slice(0, 3).map(t => `<span class="rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-600">${escapeHTML(t)}</span>`).join('')}
+          </div>
+          <div class="mt-6">${buttonPrimary('Comenzar →', `startDilema('${d.id}')`)}</div>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  renderShell('alumno', `
+    <header class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Exploración filosófica</p>
+        <h1 class="serif mt-2 text-4xl font-light tracking-tight text-stone-950 md:text-5xl">Galería de dilemas</h1>
+        <p class="mt-3 max-w-2xl text-stone-600 leading-7">Elige un caso, explora distintas respuestas y compara sus fortalezas filosóficas sin buscar una única respuesta correcta.</p>
+      </div>
+      <div class="paper-card rounded-2xl px-5 py-4 text-sm text-stone-700">
+        <span class="serif text-2xl text-amber-900">${completed}</span> / ${total} completados
+      </div>
+    </header>
+    <section class="grid gap-5">${cards || `<div class="paper-card rounded-3xl p-8 text-center"><p>No hay dilemas cargados todavía.</p></div>`}</section>
+  `, 'dilemas');
+}
+
+function startDilema(id) {
+  student = { dilemaId: id, paso: 'contexto', exploradas: [], seleccion: null };
+  renderStudentContext();
+}
+
+// ============ MODO ALUMNO · CONTEXTO ============
+function renderStudentContext() {
+  const d = getDilema(student.dilemaId);
+  if (!d) return renderStudentGallery();
+  const paragraphs = splitParagraphs(d.contexto).map(p => `<p>${escapeHTML(p)}</p>`).join('');
+
+  renderShell('alumno', `
+    <div class="max-w-4xl mx-auto">
+      <div class="mb-6 flex items-center justify-between gap-3">
+        ${buttonSecondary('← Galería', 'renderStudentGallery()')}
+        ${levelBadge(d.nivel)}
+      </div>
+      <article class="paper-card rounded-[2rem] p-6 md:p-10">
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Contexto del dilema</p>
+        <h1 class="serif mt-3 text-4xl font-light leading-tight tracking-tight text-stone-950 md:text-6xl">${escapeHTML(d.titulo)}</h1>
+        <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_260px]">
+          <div class="serif space-y-5 text-lg leading-9 text-stone-700">${paragraphs}</div>
+          <aside class="rounded-[1.5rem] border thin-line bg-white/45 p-4">
+            ${coverHTML(d, state.dilemas.findIndex(item => item.id === d.id), 'h-56 rounded-[1.2rem]')}
+            <p class="mt-5 text-xs uppercase tracking-[0.2em] text-stone-500">Temas</p>
+            <div class="mt-4 flex flex-wrap gap-2">${(d.etiquetas || []).map(t => `<span class="badge">${escapeHTML(t)}</span>`).join('')}</div>
+          </aside>
+        </div>
+        <div class="mt-10 flex justify-end">${buttonPrimary('Continuar a la pregunta →', 'renderStudentOptions()')}</div>
+      </article>
+    </div>
+  `, 'dilemas');
+}
+
+// ============ MODO ALUMNO · OPCIONES ============
+function renderStudentOptions() {
+  const d = getDilema(student.dilemaId);
+  if (!d) return renderStudentGallery();
+  student.paso = 'opciones';
+
+  const options = d.opciones.map((op, i) => {
+    const explored = student.exploradas.includes(i);
+    return `
+      <button onclick="selectOption(${i})" class="option-card ${explored ? 'explored' : ''} w-full rounded-[1.35rem] border thin-line bg-white/55 p-5 text-left">
+        <div class="flex gap-4">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${explored ? 'bg-emerald-900 text-white' : 'bg-amber-100 text-amber-900'} text-sm font-bold">${explored ? '✓' : i + 1}</div>
+          <div>
+            <p class="font-semibold leading-7 text-stone-900">${escapeHTML(op.texto)}</p>
+            <p class="mt-2 text-sm text-stone-500">${explored ? 'Ya exploraste esta postura. Puedes volver a revisarla.' : 'Toca para ver la retroalimentación filosófica.'}</p>
+          </div>
+        </div>
+      </button>
+    `;
+  }).join('');
+
+  renderShell('alumno', `
+    <div class="max-w-5xl mx-auto">
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        ${buttonSecondary('← Contexto', 'renderStudentContext()')}
+        <span class="badge green">Exploradas ${student.exploradas.length} de ${d.opciones.length}</span>
+      </div>
+      <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <section class="paper-card rounded-[2rem] p-6 md:p-8 h-fit">
+          <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Pregunta filosófica central</p>
+          <h1 class="serif mt-4 text-3xl font-light leading-tight text-stone-950 md:text-5xl">${escapeHTML(d.preguntaCentral)}</h1>
+          <p class="mt-6 leading-7 text-stone-600">No elijas pensando en “acertar”. El objetivo es comparar razones, objeciones y consecuencias.</p>
+          ${student.exploradas.length >= 2 ? `<div class="mt-8">${buttonPrimary('Ver perspectiva final →', 'renderStudentFinal()')}</div>` : `<p class="mt-8 text-sm text-stone-500">Explora al menos dos opciones para desbloquear el cierre integrador.</p>`}
+        </section>
+        <section class="space-y-4">${options}</section>
+      </div>
+    </div>
+  `, 'dilemas');
+}
+
+function selectOption(index) {
+  if (!student.exploradas.includes(index)) student.exploradas.push(index);
+  student.seleccion = index;
+  renderStudentFeedback();
+}
+
+// ============ MODO ALUMNO · RETROALIMENTACIÓN ============
+function renderStudentFeedback() {
+  const d = getDilema(student.dilemaId);
+  if (!d) return renderStudentGallery();
+  const op = d.opciones[student.seleccion];
+  if (!op) return renderStudentOptions();
+  const r = op.retroalimentacion || {};
+
+  renderShell('alumno', `
+    <div class="max-w-5xl mx-auto">
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        ${buttonSecondary('← Volver a opciones', 'renderStudentOptions()')}
+        <span class="badge green">Exploradas ${student.exploradas.length} de ${d.opciones.length}</span>
+      </div>
+      <article class="paper-card rounded-[2rem] overflow-hidden">
+        <div class="border-b thin-line bg-white/45 p-6 md:p-8">
+          <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Retroalimentación filosófica</p>
+          <h1 class="serif mt-3 text-3xl font-light leading-tight text-stone-950 md:text-5xl">${escapeHTML(op.texto)}</h1>
+        </div>
+        <div class="grid gap-0 md:grid-cols-2">
+          <section class="border-b thin-line p-6 md:border-b-0 md:border-r md:p-8">
+            <p class="field-label">Postura o tradición</p>
+            <p class="serif mt-3 text-2xl leading-8 text-stone-900">${escapeHTML(r.postura || 'Sin postura registrada.')}</p>
+          </section>
+          <section class="p-6 md:p-8">
+            <p class="field-label">Autor o referencia</p>
+            <p class="serif mt-3 text-2xl leading-8 text-stone-900">${escapeHTML(r.autorReferencia || 'Referencia no especificada.')}</p>
+          </section>
+        </div>
+        <div class="grid gap-0 md:grid-cols-2 border-t thin-line">
+          <section class="border-b thin-line p-6 md:border-b-0 md:border-r md:p-8">
+            <p class="field-label">Fortalezas del argumento</p>
+            <p class="mt-3 leading-8 text-stone-700">${escapeHTML(r.fortalezas || 'Sin fortalezas registradas.')}</p>
+          </section>
+          <section class="p-6 md:p-8">
+            <p class="field-label">Objeciones o tensiones</p>
+            <p class="mt-3 leading-8 text-stone-700">${escapeHTML(r.objeciones || 'Sin objeciones registradas.')}</p>
+          </section>
+        </div>
+        <div class="flex flex-col gap-3 border-t thin-line bg-stone-50/60 p-6 sm:flex-row sm:justify-end">
+          ${buttonSecondary('Explorar otra opción', 'renderStudentOptions()', 'sm:w-auto')}
+          ${student.exploradas.length >= 2 ? buttonPrimary('Ver perspectiva final →', 'renderStudentFinal()', 'sm:w-auto') : ''}
+        </div>
+      </article>
+    </div>
+  `, 'dilemas');
+}
+
+// ============ MODO ALUMNO · CIERRE ============
+function renderStudentFinal() {
+  const d = getDilema(student.dilemaId);
+  if (!d) return renderStudentGallery();
+  markCompleted(d.id);
+
+  const currentIndex = state.dilemas.findIndex(item => item.id === d.id);
+  const next = state.dilemas[currentIndex + 1] || state.dilemas[0];
+
+  renderShell('alumno', `
+    <div class="max-w-4xl mx-auto">
+      <article class="paper-card rounded-[2rem] p-6 md:p-10">
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Perspectiva final</p>
+        <h1 class="serif mt-3 text-4xl font-light leading-tight tracking-tight text-stone-950 md:text-6xl">Una mirada integradora</h1>
+        <div class="mt-8 rounded-[1.6rem] border thin-line bg-white/55 p-6 md:p-8">
+          <p class="serif text-xl leading-9 text-stone-800">${escapeHTML(d.cierre)}</p>
+        </div>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          ${buttonSecondary('← Volver a la galería', 'renderStudentGallery()')}
+          ${next ? buttonPrimary('Siguiente dilema →', `startDilema('${next.id}')`) : ''}
+        </div>
+      </article>
+    </div>
+  `, 'dilemas');
+}
+
+function renderStudentProgress() {
+  const total = state.dilemas.length || 1;
+  const completed = progress.completados.length;
+  const pct = Math.round((completed / total) * 100);
+  renderShell('alumno', `
+    <div class="max-w-3xl mx-auto">
+      <section class="paper-card rounded-[2rem] p-8 md:p-10">
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Progreso del alumno</p>
+        <h1 class="serif mt-3 text-4xl font-light text-stone-950">${completed} de ${total} dilemas completados</h1>
+        <div class="mt-8 h-3 overflow-hidden rounded-full bg-stone-200"><div class="h-full rounded-full bg-amber-900" style="width:${pct}%"></div></div>
+        <p class="mt-5 leading-7 text-stone-600">El avance se guarda únicamente en este navegador mediante localStorage.</p>
+        <div class="mt-8">${buttonSecondary('← Volver a dilemas', 'renderStudentGallery()')}</div>
+      </section>
+    </div>
+  `, 'progreso');
+}
+
+function renderStudentAbout() {
+  renderShell('alumno', `
+    <div class="max-w-3xl mx-auto">
+      <section class="paper-card rounded-[2rem] p-8 md:p-10">
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Acerca del material</p>
+        <h1 class="serif mt-3 text-4xl font-light text-stone-950">Filosofar antes de memorizar</h1>
+        <p class="mt-6 leading-8 text-stone-700">Este material didáctico propone dilemas éticos contemporáneos para que el estudiante compare posturas filosóficas. No busca respuestas únicas, sino la construcción de juicio, argumentación y reflexión moral.</p>
+        <div class="mt-8">${buttonSecondary('← Volver a dilemas', 'renderStudentGallery()')}</div>
+      </section>
+    </div>
+  `, 'acerca');
+}
+
+// ============ AUTENTICACIÓN DEL PROFESOR ============
+function renderTeacherLogin() {
+  if (!firebaseReady) {
+    renderShell('profesor', `
+      <div class="max-w-3xl mx-auto">
+        <section class="paper-card rounded-[2rem] p-8 md:p-10 text-center">
+          <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Firebase pendiente</p>
+          <h1 class="serif mt-3 text-4xl font-light text-stone-950">Conecta Firebase para activar el acceso docente global</h1>
+          <p class="mt-5 leading-8 text-stone-600">Mientras no pegues tu configuración de Firebase en el código, el editor seguirá funcionando solo en este navegador mediante localStorage.</p>
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            ${buttonPrimary('Continuar en modo local →', 'renderTeacherDashboard()')}
+            ${buttonSecondary('← Volver al inicio', 'renderHome()')}
+          </div>
+        </section>
+      </div>
+    `, 'dilemas');
+    return;
+  }
+
+  renderShell('profesor', `
+    <div class="max-w-md mx-auto">
+      <section class="paper-card rounded-[2rem] p-8 md:p-10">
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Acceso docente</p>
+        <h1 class="serif mt-3 text-4xl font-light text-stone-950">Iniciar sesión</h1>
+        <p class="mt-4 text-sm leading-7 text-stone-600">El alumno puede leer los dilemas sin cuenta. Solo el profesor necesita iniciar sesión para crear, editar o eliminar contenido.</p>
+
+        <form class="mt-8 space-y-4" onsubmit="signInTeacher(event)">
+          <div>
+            <label class="field-label">Correo del profesor</label>
+            <input id="teacher-email" class="field mt-2" type="email" autocomplete="email" required placeholder="correo@ejemplo.com">
+          </div>
+          <div>
+            <label class="field-label">Contraseña</label>
+            <input id="teacher-password" class="field mt-2" type="password" autocomplete="current-password" required placeholder="••••••••">
+          </div>
+          <button class="btn-press w-full rounded-full bg-stone-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-stone-900/15 hover:bg-stone-800" type="submit">Entrar al modo profesor</button>
+        </form>
+      </section>
+    </div>
+  `, 'dilemas');
+}
+
+async function signInTeacher(event) {
+  event.preventDefault();
+  if (!firebaseReady || !auth) return showToast('Firebase todavía no está configurado.');
+  const email = document.getElementById('teacher-email').value.trim();
+  const password = document.getElementById('teacher-password').value;
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    currentUser = auth.currentUser;
+    showToast('Sesión iniciada.');
+    await loadState();
+    renderTeacherDashboard();
+  } catch (error) {
+    console.error(error);
+    showToast('No se pudo iniciar sesión. Revisa correo y contraseña.');
+  }
+}
+
+async function logoutTeacher() {
+  if (firebaseReady && auth) await auth.signOut();
+  currentUser = null;
+  showToast('Sesión cerrada.');
+  renderHome();
+}
+
+function requireTeacherSession() {
+  if (!firebaseReady) return true;
+  if (currentUser) return true;
+  showToast('Inicia sesión como profesor para modificar los dilemas.');
+  renderTeacherLogin();
+  return false;
+}
+
+// ============ MODO PROFESOR · DASHBOARD ============
+function renderTeacherDashboard() {
+  if (!requireTeacherSession()) return;
+  teacherEditingId = null;
+  const rows = state.dilemas.map((d, i) => `
+    <tr class="border-t thin-line align-top">
+      <td class="px-4 py-4">
+        <div class="flex gap-4">
+          ${coverHTML(d, i, 'hidden h-16 w-16 shrink-0 rounded-2xl sm:block')}
+          <div>
+            <p class="font-semibold text-stone-950">${escapeHTML(d.titulo)}</p>
+            <p class="mt-1 max-w-md text-sm leading-6 text-stone-600">${escapeHTML(d.preguntaCentral)}</p>
+          </div>
+        </div>
+      </td>
+      <td class="hidden px-4 py-4 text-sm text-stone-600 md:table-cell">${(d.etiquetas || []).map(t => escapeHTML(t)).join(', ') || 'Sin etiquetas'}</td>
+      <td class="hidden px-4 py-4 md:table-cell">${levelBadge(d.nivel)}</td>
+      <td class="px-4 py-4">
+        <div class="flex gap-2 justify-end">
+          <button onclick="renderTeacherForm('${d.id}')" class="rounded-full border border-stone-300 px-3 py-2 text-sm hover:bg-stone-100">Editar</button>
+          <button onclick="deleteDilema('${d.id}')" class="rounded-full border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50">Eliminar</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  renderShell('profesor', `
+    <header class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-800">Administración del contenido</p>
+        <h1 class="serif mt-2 text-4xl font-light tracking-tight text-stone-950 md:text-5xl">Modo profesor</h1>
+        <p class="mt-3 max-w-2xl text-stone-600 leading-7">Crea, edita, elimina, importa y exporta dilemas. ${firebaseReady ? 'Los cambios se guardan en Firebase y se publican para todos los alumnos.' : 'Firebase no está configurado: los cambios se guardan solo en este navegador mediante localStorage.'}</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          ${firebaseReady ? '<span class="badge green">Firebase conectado</span>' : '<span class="badge gray">Modo local</span>'}
+          ${firebaseReady && currentUser ? `<span class="badge">${escapeHTML(currentUser.email || 'Profesor')}</span>` : ''}
+        </div>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row">
+        ${buttonSecondary('Exportar JSON ↓', 'exportJSON()')}
+        ${buttonSecondary('Importar JSON ↑', "document.getElementById('import-json').click()")}
+        ${buttonPrimary('+ Crear nuevo dilema', 'renderTeacherForm()')}
+        ${firebaseReady && currentUser ? buttonSecondary('Cerrar sesión', 'logoutTeacher()') : ''}
+      </div>
+    </header>
+    <section class="paper-card overflow-hidden rounded-[1.6rem]">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[720px] text-left">
+          <thead class="bg-white/55 text-sm text-stone-600">
+            <tr>
+              <th class="px-4 py-4 font-semibold">Título</th>
+              <th class="px-4 py-4 font-semibold">Etiquetas</th>
+              <th class="px-4 py-4 font-semibold">Nivel</th>
+              <th class="px-4 py-4 text-right font-semibold">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>${rows || `<tr><td colspan="4" class="px-6 py-10 text-center text-stone-500">No hay dilemas cargados.</td></tr>`}</tbody>
+        </table>
+      </div>
+    </section>
+    <p class="mt-5 text-center text-xs text-stone-500">Mostrando ${state.dilemas.length} dilema(s)</p>
+  `, 'dilemas');
+}
+
+function emptyDilema() {
+  return {
+    id: uid(),
+    titulo: '',
+    contexto: '',
+    preguntaCentral: '',
+    imagenUrl: '',
+    imagenAlt: '',
+    opciones: [
+      { texto: '', retroalimentacion: { postura: '', fortalezas: '', objeciones: '', autorReferencia: '' } },
+      { texto: '', retroalimentacion: { postura: '', fortalezas: '', objeciones: '', autorReferencia: '' } },
+      { texto: '', retroalimentacion: { postura: '', fortalezas: '', objeciones: '', autorReferencia: '' } }
+    ],
+    cierre: '',
+    etiquetas: [],
+    nivel: 'introductorio'
+  };
+}
+
+let draftDilema = null;
+
+// ============ MODO PROFESOR · FORMULARIO ============
+function renderTeacherForm(id = null) {
+  if (!requireTeacherSession()) return;
+  teacherEditingId = id;
+  const original = id ? getDilema(id) : null;
+  draftDilema = original ? structuredClone(original) : emptyDilema();
+  drawTeacherForm();
+}
+
+function drawTeacherForm() {
+  const d = draftDilema;
+  const optionsHTML = d.opciones.map((op, index) => `
+    <div class="rounded-[1.5rem] border thin-line bg-white/45 p-5" data-option-index="${index}">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 class="serif text-2xl font-light">Opción ${index + 1}</h3>
+        ${d.opciones.length > 2 ? `<button onclick="removeDraftOption(${index})" class="rounded-full border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50" type="button">Eliminar</button>` : ''}
+      </div>
+      <label class="field-label">Texto de la opción</label>
+      <input class="field mt-2" value="${escapeHTML(op.texto)}" oninput="draftDilema.opciones[${index}].texto=this.value" placeholder="Ej. Sí, si se usa con transparencia...">
+
+      <div class="mt-5 grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="field-label">Postura o tradición filosófica</label>
+          <textarea class="field mt-2" oninput="draftDilema.opciones[${index}].retroalimentacion.postura=this.value" placeholder="Ej. Deontología kantiana">${escapeHTML(op.retroalimentacion.postura)}</textarea>
+        </div>
+        <div>
+          <label class="field-label">Autor o referencia para profundizar</label>
+          <input class="field mt-2" value="${escapeHTML(op.retroalimentacion.autorReferencia || '')}" oninput="draftDilema.opciones[${index}].retroalimentacion.autorReferencia=this.value" placeholder="Ej. Immanuel Kant">
+        </div>
+      </div>
+      <div class="mt-4 grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="field-label">Fortalezas del argumento</label>
+          <textarea class="field mt-2" oninput="draftDilema.opciones[${index}].retroalimentacion.fortalezas=this.value">${escapeHTML(op.retroalimentacion.fortalezas)}</textarea>
+        </div>
+        <div>
+          <label class="field-label">Objeciones o tensiones</label>
+          <textarea class="field mt-2" oninput="draftDilema.opciones[${index}].retroalimentacion.objeciones=this.value">${escapeHTML(op.retroalimentacion.objeciones)}</textarea>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  renderShell('profesor', `
+    <div class="max-w-6xl mx-auto">
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p class="text-xs uppercase tracking-[0.28em] text-amber-800">${teacherEditingId ? 'Editar contenido' : 'Nuevo contenido'}</p>
+          <h1 class="serif mt-2 text-4xl font-light text-stone-950">${teacherEditingId ? 'Editar dilema' : 'Crear nuevo dilema'}</h1>
+        </div>
+        ${buttonSecondary('← Volver a gestión', 'renderTeacherDashboard()')}
+      </div>
+
+      <form class="paper-card rounded-[2rem] p-6 md:p-8" onsubmit="event.preventDefault(); saveDilemaFromForm();">
+        <div class="grid gap-5 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <label class="field-label">Título obligatorio</label>
+            <input class="field mt-2" value="${escapeHTML(d.titulo)}" oninput="draftDilema.titulo=this.value" placeholder="Ej. ¿Es ético usar IA en trabajos académicos?">
+          </div>
+          <div class="md:col-span-2">
+            <label class="field-label">Contexto / Situación obligatorio</label>
+            <textarea class="field mt-2 min-h-[170px]" oninput="draftDilema.contexto=this.value" placeholder="Describe el caso en uno o dos párrafos.">${escapeHTML(d.contexto)}</textarea>
+          </div>
+          <div class="md:col-span-2">
+            <label class="field-label">Pregunta filosófica central obligatoria</label>
+            <input class="field mt-2" value="${escapeHTML(d.preguntaCentral)}" oninput="draftDilema.preguntaCentral=this.value" placeholder="Formula la pregunta que abre el dilema.">
+          </div>
+          <div class="md:col-span-2 grid gap-5 lg:grid-cols-[1fr_260px]">
+            <div class="space-y-4">
+              <div>
+                <label class="field-label">Imagen de portada del dilema</label>
+                <input class="field mt-2" value="${escapeHTML(d.imagenUrl || '')}" oninput="draftDilema.imagenUrl=this.value" placeholder="Pega aquí una URL de imagen, por ejemplo de Wikimedia Commons">
+                <p class="mt-2 text-xs leading-5 text-stone-500">Se mostrará en la galería del alumno y en la vista del dilema. Si la URL falla, aparecerá un fondo editorial de respaldo.</p>
+              </div>
+              <div>
+                <label class="field-label">Descripción / crédito de la imagen</label>
+                <input class="field mt-2" value="${escapeHTML(d.imagenAlt || '')}" oninput="draftDilema.imagenAlt=this.value" placeholder="Ej. Immanuel Kant — retrato clásico">
+              </div>
+            </div>
+            <div>
+              <p class="field-label mb-2">Vista previa</p>
+              ${coverHTML(d, 0, 'h-48 rounded-[1.4rem]')}
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Etiquetas opcionales</label>
+            <input class="field mt-2" value="${escapeHTML((d.etiquetas || []).join(', '))}" oninput="draftDilema.etiquetas=this.value.split(',').map(t=>t.trim()).filter(Boolean)" placeholder="IA, privacidad, redes sociales">
+          </div>
+          <div>
+            <label class="field-label">Nivel opcional</label>
+            <select class="field mt-2" onchange="draftDilema.nivel=this.value">
+              <option value="introductorio" ${d.nivel === 'introductorio' ? 'selected' : ''}>Introductorio</option>
+              <option value="intermedio" ${d.nivel === 'intermedio' ? 'selected' : ''}>Intermedio</option>
+              <option value="avanzado" ${d.nivel === 'avanzado' ? 'selected' : ''}>Avanzado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="my-8 border-t thin-line"></div>
+        <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p class="field-label">Opciones de respuesta</p>
+            <p class="mt-2 text-sm text-stone-600">Mínimo 2, máximo 4. Cada opción debe incluir retroalimentación filosófica.</p>
+          </div>
+          ${d.opciones.length < 4 ? buttonSecondary('+ Agregar opción', 'addDraftOption()', '', 'type="button"') : ''}
+        </div>
+        <div class="space-y-5">${optionsHTML}</div>
+
+        <div class="my-8 border-t thin-line"></div>
+        <label class="field-label">Perspectiva final / Cierre obligatorio</label>
+        <textarea class="field mt-2 min-h-[170px]" oninput="draftDilema.cierre=this.value" placeholder="Redacta una síntesis integradora que dialogue con las posturas sin imponer una respuesta única.">${escapeHTML(d.cierre)}</textarea>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          ${buttonSecondary('Cancelar', 'renderTeacherDashboard()', '', 'type="button"')}
+          <button class="btn-press rounded-full bg-stone-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-stone-900/15 hover:bg-stone-800" type="submit">Guardar dilema</button>
+        </div>
+      </form>
+    </div>
+  `, 'crear');
+}
+
+function addDraftOption() {
+  if (!draftDilema || draftDilema.opciones.length >= 4) return;
+  draftDilema.opciones.push({ texto: '', retroalimentacion: { postura: '', fortalezas: '', objeciones: '', autorReferencia: '' } });
+  drawTeacherForm();
+}
+
+function removeDraftOption(index) {
+  if (!draftDilema || draftDilema.opciones.length <= 2) return;
+  draftDilema.opciones.splice(index, 1);
+  drawTeacherForm();
+}
+
+function validateDilema(d) {
+  if (!d.titulo.trim()) return 'Falta el título del dilema.';
+  if (!d.contexto.trim()) return 'Falta el contexto o situación.';
+  if (!d.preguntaCentral.trim()) return 'Falta la pregunta filosófica central.';
+  if (!Array.isArray(d.opciones) || d.opciones.length < 2) return 'El dilema debe tener al menos dos opciones.';
+  for (let i = 0; i < d.opciones.length; i++) {
+    const op = d.opciones[i];
+    if (!op.texto.trim()) return `Falta el texto de la opción ${i + 1}.`;
+    if (!op.retroalimentacion.postura.trim()) return `Falta la postura filosófica de la opción ${i + 1}.`;
+    if (!op.retroalimentacion.fortalezas.trim()) return `Faltan las fortalezas de la opción ${i + 1}.`;
+    if (!op.retroalimentacion.objeciones.trim()) return `Faltan las objeciones de la opción ${i + 1}.`;
+  }
+  if (!d.cierre.trim()) return 'Falta la perspectiva final o cierre.';
+  return null;
+}
+
+async function saveDilemaFromForm() {
+  if (!requireTeacherSession()) return;
+  if (!draftDilema) return;
+  draftDilema.titulo = draftDilema.titulo.trim();
+  draftDilema.contexto = draftDilema.contexto.trim();
+  draftDilema.preguntaCentral = draftDilema.preguntaCentral.trim();
+  draftDilema.imagenUrl = (draftDilema.imagenUrl || '').trim();
+  draftDilema.imagenAlt = (draftDilema.imagenAlt || '').trim();
+  draftDilema.cierre = draftDilema.cierre.trim();
+  draftDilema.nivel = draftDilema.nivel || 'introductorio';
+  draftDilema.etiquetas = Array.isArray(draftDilema.etiquetas) ? draftDilema.etiquetas.filter(Boolean) : [];
+
+  const error = validateDilema(draftDilema);
+  if (error) return showToast(error);
+
+  const existingIndex = state.dilemas.findIndex(d => d.id === draftDilema.id);
+  if (existingIndex >= 0) state.dilemas[existingIndex] = structuredClone(draftDilema);
+  else state.dilemas.push(structuredClone(draftDilema));
+  try {
+    await saveState();
+    showToast(firebaseReady ? 'Dilema publicado en Firebase.' : 'Dilema guardado correctamente.');
+    renderTeacherDashboard();
+  } catch (error) {
+    console.error(error);
+    showToast('No se pudo guardar el dilema. Revisa Firebase y las reglas de seguridad.');
+  }
+}
+
+async function deleteDilema(id) {
+  if (!requireTeacherSession()) return;
+  const d = getDilema(id);
+  if (!d) return;
+  const ok = confirm(`¿Eliminar el dilema "${d.titulo}"? Esta acción no se puede deshacer.`);
+  if (!ok) return;
+  try {
+    state.dilemas = state.dilemas.filter(item => item.id !== id);
+    progress.completados = progress.completados.filter(item => item !== id);
+    if (firebaseReady) await deleteDilemaFromFirebase(id);
+    else await saveState();
+    saveProgress();
+    showToast(firebaseReady ? 'Dilema eliminado de Firebase.' : 'Dilema eliminado.');
+    renderTeacherDashboard();
+  } catch (error) {
+    console.error(error);
+    showToast('No se pudo eliminar el dilema.');
+  }
+}
+
+// ============ IMPORTAR / EXPORTAR JSON ============
+function exportJSON() {
+  const payload = JSON.stringify({ version: state.version || '1.0', dilemas: state.dilemas }, null, 2);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dialogos-eticos-dilemas.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('JSON exportado correctamente.');
+}
+
+function normalizeImported(data) {
+  const dilemas = Array.isArray(data) ? data : data.dilemas;
+  if (!Array.isArray(dilemas)) throw new Error('El archivo no contiene un arreglo de dilemas.');
+  return dilemas.map(item => normalizeDilema(item));
+}
+
+function handleImportJSON(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    if (!requireTeacherSession()) return;
+    try {
+      const parsed = JSON.parse(reader.result);
+      const imported = normalizeImported(parsed);
+      const replace = confirm(`Se encontraron ${imported.length} dilema(s).\n\nAceptar = reemplazar todos los dilemas actuales.\nCancelar = fusionarlos con los existentes.`);
+      if (replace) state.dilemas = imported;
+      else {
+        const existingIds = new Set(state.dilemas.map(d => d.id));
+        const merged = imported.map(d => existingIds.has(d.id) ? { ...d, id: uid() } : d);
+        state.dilemas = [...state.dilemas, ...merged];
+      }
+
+      if (firebaseReady) await replaceAllDilemmasInFirebase(state.dilemas);
+      else await saveState();
+
+      showToast(firebaseReady ? 'JSON importado y publicado en Firebase.' : 'JSON importado correctamente.');
+      renderTeacherDashboard();
+    } catch (error) {
+      console.error(error);
+      showToast('No se pudo importar el JSON. Revisa el formato o los permisos.');
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============ INICIO DE LA APP ============
+async function initApp() {
+  await initFirebase();
+  await loadState();
+  renderHome();
+}
+initApp();
+</script>
+</body>
+</html>
